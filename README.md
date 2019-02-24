@@ -24,12 +24,12 @@ After download, you can run
 
 Then, to use the program, simply run:
 
-`./deeptiv2.sh head.nii`.
+`./deeptiv.sh head.nii`.
 
 For more flexibility, the following options are available:
 
 ```
-Usage  : ./deeptiv2.sh [ options ] head.nii
+Usage  : ./deeptiv.sh [ options ] head.nii
 Options: 
     -n   :  do not perform any MNI registration step, only identify the brain
     -b   :  output a skull-stripped image (named '_skullstrip.nii.gz')
