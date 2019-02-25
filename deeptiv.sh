@@ -167,7 +167,7 @@ fi
     
 if [ $resample_mm ] && [ ! $NLWREG ]; then
     echo "Applying the transform"
-    antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz -o affineMNI_${a}.nii.gz > /dev/null
+    antsApplyTransforms -v -d 3 -i ${a0} -t aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz -o affineMNI_${a}.nii.gz > /dev/null
 else
     echo "To apply the transform and resample your image in MNI space, try:"
     echo "   antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_2mm.nii.gz -o affineMNI_${a}.nii"
@@ -181,7 +181,7 @@ fi
 
     if [ $resample_mm ]; then
         echo "Applying the transform"
-        antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/syn_${a}1Warp.nii.gz -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz -o synMNI_${a}.nii > /dev/null
+        antsApplyTransforms -v -d 3 -i ${a0} -t syn_${a}1Warp.nii.gz -t aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz -o synMNI_${a}.nii > /dev/null
     else
         echo "To apply your non-linear transform and resample your image in MNI space, try:"
         echo "   antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/syn_${a}1Warp.nii.gz -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_2mm.nii.gz -o synMNI_${a}.nii"
