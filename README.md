@@ -9,7 +9,7 @@ This program should work on most platforms. No GPU is required.
 
 The code uses numpy and Theano. It also requires the nibabel library (for nifti loading) and the Lasagne library.
 
-To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container such as http://www.mindboggle.info/ )
+To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container such as http://www.mindboggle.info/ ). The 2.1.0 binaries are known to work ( https://github.com/ANTsX/ANTs/releases/tag/v2.1.0 )
 
 The simplest way to install the rest from scratch is to use a Anaconda environment, then
 * install scipy and Theano >=0.9.0 (`conda install theano`)
@@ -24,7 +24,7 @@ After download, you can run
 
 Then, to use the program, simply run:
 
-`./deeptiv.sh head.nii`.
+`./deeptiv.sh head.nii`
 
 For more flexibility, the following options are available:
 
