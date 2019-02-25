@@ -18,8 +18,9 @@ while (( "$#" )); do
         -d) KEEP=1;;
         -c) CROP=1;;
         -w) NLWREG=1;;
-	-t) shift; reg_target=$1;;
-	-tw) shift; reg_target_head=$1;;
+        --resample) shift; resample_mm=$1;;
+        -t) shift; reg_target=$1;;
+        -tw) shift; reg_target_head=$1;;
         -h) echo "Identify and reorient the brain on medical images
 Usage  : $0 [ options ] head.nii
 Options: 
@@ -30,7 +31,12 @@ Options:
     -r   :  compute a rigid transform to MNI instead of the default affine.
             Useful to re-orient/crop images with challenging content or FOV.
     -w   :  include a final SyN (non-linear warping) coregistration step (using
-            the original image intensity onto the MNI152 T1 template)
+            the original image intensity, matched to the MNI152 T1 template)
+
+    --resample [ 1 | 1.5 | 2 ] : write a MNI-reoriented copy of the data, using
+            a standard MNI box with voxel resolution of 1, 1.5 or 2mm. (For more
+            flexibility, use ANTs directly as suggested in the program output)
+            Output will have the prefix affineMNI_ or synMNI_
 
     -t x :  use a different target for alignment. 'x' Must refer to its cortical
             and cerebrum mask (see -d), and have a '_tissues0.nii.gz' suffix
@@ -71,6 +77,11 @@ if [ ${reg_target: -16:16} != "_tissues0.nii.gz" ]; then
     echo "Registration target name should have suffix tissues0.nii.gz. You can"
     echo "generate them by running the -d option on your template image"
     exit 1;
+fi
+
+if [ $resample_mm ] && [ ! -f "${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz" ]; then
+    echo "Invalid resampling argument $resample_mm is not 1, 1.5 or 2. Using 1 instead."
+    resample_mm=1
 fi
 
 if [ ! -f "$filename" ]; then echo -e "input file not found $filename\nSee -h for usage."; exit; fi
@@ -146,11 +157,6 @@ else
     antsRegistration --dimensionality 3 --float 1 --output aff_${a} --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995] --initial-moving-transform [ ${reg_target%%0.nii.gz}1.nii.gz,res64_${a}_tissues1.nii.gz,1] --transform Rigid[0.1] --metric MI[ ${reg_target%%0.nii.gz}1.nii.gz,res64_${a}_tissues1.nii.gz,1,32,Regular,0.25] --convergence [ 1000x500x250x0,1e-6,10] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[0.1] --metric MI[ ${reg_target%%0.nii.gz}1.nii.gz,res64_${a}_tissues1.nii.gz,1,32,Regular,0.25] --convergence [ 1000x500x250x0,1e-6,10] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > /dev/null
 fi
 
-    ## alternatively
-    ##antsRegistrationSyNQuick.sh -m res64_${a}_tissues1.nii.gz -f ${scriptpath}/atlas/res64_mni_icbm152_t1_tal_nlin_asym_09c_tissues1.nii.gz  -m res64_${a}_tissues2.nii.gz -f ${scriptpath}/atlas/res64_mni_icbm152_t1_tal_nlin_asym_09c_tissues2.nii.gz -t a -o aff_${a} -n 1 > /dev/null
-    ##antsRegistrationSyNQuick.sh -m res64_${a}_tissues2.nii.gz -f ${scriptpath}/atlas/res64_mni_icbm152_t1_tal_nlin_asym_09c_tissues2.nii.gz -t a -o aff_${a} -n 1 > /dev/null
-    ##rm aff_${a}InverseWarped.nii.gz
-    ##rm aff_${a}Warped.nii.gz    
 
     # display the matrix in text form
     echo "MNI affine transform matrix (RAS):"
@@ -158,19 +164,29 @@ fi
     echo "ANTS affine matrix saved as aff_${a}0GenericAffine.mat"
 
 
+    
+if [ $resample_mm ] && [ ! $NLWREG ]; then
+    echo "Applying the transform"
+    antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz -o affineMNI_${a}.nii.gz > /dev/null
+else
     echo "To apply the transform and resample your image in MNI space, try:"
     echo "   antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_2mm.nii.gz -o affineMNI_${a}.nii"
     echo " where -o XXX.nii is the output, and -r XXX.nii is an MNI-defining reference image"
-    
-
+fi
 
     if [ $NLWREG ]; then
     echo "Performing native-space non-linear (SyN) step using ANTs"
     echo "    antsRegistration -d 3 --output syn_${a} --float 1 -w [0.005,0.995] -r aff_${a}0GenericAffine.mat --transform SyN[0.1,3,0] --metric MI[ ${reg_target_head},${a1},1,32] --convergence [100x70x30x0,1e-6,10] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox"
     antsRegistration -d 3 --output syn_${a} --float 1 -w [ 0.005,0.995] -r aff_${a}0GenericAffine.mat --transform SyN[ 0.1,3,0] --metric MI[ ${reg_target_head},${a1},1,32] --convergence [ 100x70x30x0,1e-6,10] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox
-    echo "To apply your non-linear transform and resample your image in MNI space, try:"
-    echo "   antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/syn_${a}1Warp.nii.gz -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_2mm.nii.gz -o wMNI_${a}.nii"
-    echo " where -o XXX.nii is the output, and -r XXX.nii is an MNI-defining reference image"
+
+    if [ $resample_mm ]; then
+        echo "Applying the transform"
+        antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/syn_${a}1Warp.nii.gz -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_${resample_mm}mm.nii.gz -o synMNI_${a}.nii > /dev/null
+    else
+        echo "To apply your non-linear transform and resample your image in MNI space, try:"
+        echo "   antsApplyTransforms -v -d 3 -i $pth/${a0} -t ${pth}/syn_${a}1Warp.nii.gz -t ${pth}/aff_${a}0GenericAffine.mat --float -r ${scriptpath}/atlas/MNI_box_2mm.nii.gz -o synMNI_${a}.nii"
+        echo " where -o XXX.nii is the output, and -r XXX.nii is an MNI-defining reference image"
+    fi
     fi
 
 fi
