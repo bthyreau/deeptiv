@@ -9,7 +9,7 @@ This program should work on most platforms. No GPU is required.
 
 The code uses numpy and Theano. It also requires the nibabel library (for nifti loading) and the Lasagne library.
 
-To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container such as http://www.mindboggle.info/ ). The 2.1.0 binaries are known to work ( https://github.com/ANTsX/ANTs/releases/tag/v2.1.0 )
+This program requires ANTs. To setup a ANTs environment, get it from http://stnava.github.io/ANTs/ (or alternatively, from a docker container such as http://www.mindboggle.info/ ). The 2.1.0 binaries are known to work ( https://github.com/ANTsX/ANTs/releases/tag/v2.1.0 )
 
 The simplest way to install the rest from scratch is to use a Anaconda environment, then
 * install scipy and Theano >=0.9.0 (`conda install theano`)
@@ -38,7 +38,12 @@ Options:
     -r   :  compute a rigid transform to MNI instead of the default affine.
             Useful to re-orient/crop images with challenging content or FOV.
     -w   :  include a final SyN (non-linear warping) coregistration step (using
-            the original image intensity onto the MNI152 T1 template)
+            the original image intensity, matched to the MNI152 T1 template)
+
+    --resample [ 1 | 1.5 | 2 ] : write a MNI-reoriented copy of the data, using
+            a standard MNI box with voxel resolution of 1, 1.5 or 2mm. (For more
+            flexibility, use ANTs directly as suggested in the program output)
+            Output will have the prefix affineMNI_ or synMNI_
 
     -t x :  use a different target for alignment. 'x' Must refer to its cortical
             and cerebrum mask (see -d), and have a '_tissues0.nii.gz' suffix
