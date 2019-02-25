@@ -50,7 +50,7 @@ done
 which antsApplyTransforms > /dev/null
 if [ $? -eq "1" ]; then echo "ANTs scripts not in path"; exit; fi
 
-if [ `echo ?` != '?' ]; then
+if [ "`echo ?`" != '?' ]; then
     echo "*** The following file(s) were found in the current directory ($PWD): `echo ?`"
     echo "The presence of files named with a single character may cause failures in some ANTs version."
     echo "Aborting for safety."
