@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning) 
 import nibabel
 import numpy as np
 import sys

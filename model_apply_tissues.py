@@ -1,4 +1,6 @@
 from __future__ import print_function
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning) # hide possible h5py FutureWarning
 
 from lasagne.layers import get_output, InputLayer, DenseLayer, ReshapeLayer, NonlinearityLayer
 from lasagne.nonlinearities import rectify, leaky_rectify, elu
@@ -24,95 +26,47 @@ import theano.misc.pkl_utils
 cachefile = os.path.dirname(os.path.realpath(__file__)) + "/model3tissues.pkl"
 
 if not os.path.exists(cachefile):
-    if 0:
+    if 1:
         l = InputLayer(shape = (None, 1, 64, 64, 64), name="input")
         l_input = l
 
-        l = Conv3DLayer(l, num_filters = 16, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 24, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
         l = Conv3DLayer(l, num_filters = 16, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
         l = instance_norm(l)
         li0 = l
 
         l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-        l = Conv3DLayer(l, num_filters = 24, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 24, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = instance_norm(l)
-        li1 = l
-
-        l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-        l = Conv3DLayer(l, num_filters = 48, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 64, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
-        l = instance_norm(l)
-        li2 = l
-
-        l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-        l = Conv3DLayer(l, num_filters = 64, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 64, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
-        l = instance_norm(l)
-
-        l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-        l = Conv3DLayer(l, num_filters = 32, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = ConcatLayer([l, li2])
-        l = Conv3DLayer(l, num_filters = 32, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
-        l = instance_norm(l)
-
-        l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-        l = Conv3DLayer(l, num_filters = 24, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = instance_norm(l)
-        l = ConcatLayer([l, li1])
-        l = Conv3DLayer(l, num_filters = 24, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
-        l = instance_norm(l)
-
-        l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-        l = Conv3DLayer(l, num_filters = 16, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = instance_norm(l)
-        l = ConcatLayer([l, li0])
-        l = Conv3DLayer(l, num_filters = 16, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = instance_norm(l)
-        l = Conv3DLayer(l, num_filters = 3, filter_size = 1, pad = "same", name="conv1x", nonlinearity = lasagne.nonlinearities.sigmoid )
-        lastl = l
-        network = l
-    else:
-        l = InputLayer(shape = (None, 1, 64, 64, 64), name="input")
-        l_input = l
-
-        l = Conv3DLayer(l, num_filters = 16//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 16, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = instance_norm(l)
-        li0 = l
-
-        l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-        l = Conv3DLayer(l, num_filters = 24//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 24//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 36, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 36, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
         l = instance_norm(l)
         li1 = l
 
         l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
         l = Conv3DLayer(l, num_filters = 48//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 64//2*3, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
         l = instance_norm(l)
         li2 = l
 
         l = MaxPool3DLayer(l, pool_size = 2, name ='maxpool')
-        l = Conv3DLayer(l, num_filters = 64//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
-        l = Conv3DLayer(l, num_filters = 64//2*3, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 96, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
         l = instance_norm(l)
 
         l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-        l = Conv3DLayer(l, num_filters = 32//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 48, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
         l = ConcatLayer([l, li2])
-        l = Conv3DLayer(l, num_filters = 32//2*3, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 48, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
         l = instance_norm(l)
 
         l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-        l = Conv3DLayer(l, num_filters = 24//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 36, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
         l = instance_norm(l)
         l = ConcatLayer([l, li1])
-        l = Conv3DLayer(l, num_filters = 24//2*3, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 36, filter_size = (3,3,3), pad = 'same', name ='conv', nonlinearity=elu)
         l = instance_norm(l)
 
         l = Upscale3DLayer(l, scale_factor = 2, name="upscale")
-        l = Conv3DLayer(l, num_filters = 16//2*3, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
+        l = Conv3DLayer(l, num_filters = 24, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
         l = instance_norm(l)
         l = ConcatLayer([l, li0])
         l = Conv3DLayer(l, num_filters = 16, filter_size = (3,3,3), pad = 'same', name="conv", nonlinearity=elu)
@@ -120,6 +74,7 @@ if not os.path.exists(cachefile):
         l = Conv3DLayer(l, num_filters = 3, filter_size = 1, pad = "same", name="conv1x", nonlinearity = lasagne.nonlinearities.sigmoid )
         lastl = l
         network = l
+
     def reload_fn(fn):
         with np.load(fn) as f:
             param_values = [f['arr_%d' % i] for i in range(len(f.files))]
