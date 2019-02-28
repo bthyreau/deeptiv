@@ -35,20 +35,22 @@ Options:
     -b   :  output a skull-stripped image (named '_skullstrip.nii.gz')
     -c   :  crop the image (ie. native orientation limited to the brain area)
 
-    -r   :  compute a rigid transform to MNI instead of the default affine.
+    -r   :  compute a rigid transform to MNI in addition to the default affine.
             Useful to re-orient/crop images with challenging content or FOV.
-    -w   :  include a final SyN (non-linear warping) coregistration step (using
-            the original image intensity, matched to the MNI152 T1 template)
+    -w   :  include a final SyN (non-linear warping) coregistration step, using
+            the original image intensity matched to the T1-weighted MNI152
+            template image (or another target specified with -t)
 
-    --resample [ 1 | 1.5 | 2 ] : write a MNI-reoriented copy of the data, using
-            a standard MNI box with voxel resolution of 1, 1.5 or 2mm. (For more
-            flexibility, use ANTs directly as suggested in the program output)
-            Output will have the prefix affineMNI_ or synMNI_
+    --resample [ target.nii | 1 | 1.5 | 2 ] : write a resampled copy of the data,
+            using the space defined by target.nii, or a standard MNI box with voxel
+            resolution of 1, 1.5 or 2mm. (For more flexibility, use ANTs directly
+            as suggested in the program output)
+            Output will have the prefix rigidMNI_, affineMNI_ or synMNI_
 
-    -t x :  use a different target for alignment. 'x' Must refer to its cortical
-            and cerebrum mask (see -d), and have a '_tissues0.nii.gz' suffix
-    -tw x:  use a different target for SyN final alignment. 'x' refers to an
-            original-contrast, such as population templates or single subject.
-    -d   :  write the low-res (64x64x64) cortical and cerebrum masks images.
+    -t target.nii :  use a different target for alignment. If associated tissue
+            files are found (ie. named like target_issues0.nii.gz), they will be
+            used otherwise they will be created first.
+    -d   :  write the low-res (64x64x64) cortical and cerebrum masks images, not
+            the original-resolution masks.
             Useful for other registrations (e.g. non-MNI, or between subjects)
 ```

@@ -145,5 +145,6 @@ if len(sys.argv) > 1:
 
     # cortex
     output = out1[0,1].astype("float32")
+    output[output < .01] = 0
     out = nibabel.orientations.apply_orientation(output, trn_back)
     nibabel.Nifti1Image(out, img.affine, img.header).to_filename(outfilename.replace("_tiv", "_tissues%d" % 1))
